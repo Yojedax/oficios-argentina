@@ -1,10 +1,7 @@
-import { useState } from 'react';
-import type { Metadata } from 'next';
+"use client";
 
-export const metadata: Metadata = {
-  title: 'Contacto | Oficios Argentina',
-  description: 'Contactá con el equipo de Oficios Argentina',
-};
+import { useState } from 'react';
+import { useState } from 'react';
 
 export default function ContactPage() {
   const [formData, setFormData] = useState({
