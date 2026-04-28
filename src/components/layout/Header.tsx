@@ -16,7 +16,7 @@ export interface HeaderProps {
   onLogout?: () => void;
 }
 
-const Header = React.forwardRef<HTMLHeaderElement, HeaderProps>(
+const Header = React.forwardRef<HTMLElement, HeaderProps>(
   ({ isLoggedIn = false, userName, onLogout }, ref) => {
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 

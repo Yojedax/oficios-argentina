@@ -7,7 +7,8 @@ import { uploadPortfolioPhoto, deletePortfolioPhoto } from '@/lib/actions/photos
 
 interface PortfolioPhoto {
   id: string;
-  photo_url: string;
+  image_url: string;
+  caption?: string | null;
 }
 
 export default function PhotoManagementPage() {
@@ -35,7 +36,7 @@ export default function PhotoManagementPage() {
 
       if (profile) {
         const { data: photosData } = await supabase
-          .from('portfolio_photos')
+          .from('portfolio_images')
           .select('*')
           .eq('professional_id', profile.id)
           .order('created_at', { ascending: false });
@@ -75,13 +76,16 @@ export default function PhotoManagementPage() {
     setSuccessMessage('');
 
     try {
-      const result = await uploadPortfolioPhoto(file);
+      const formData = new FormData();
+      formData.append('photo', file);
+
+      const result = await uploadPortfolioPhoto(formData);
 
       if (result.error) {
         setErrorMessage(result.error);
       } else {
         setSuccessMessage('Foto subida exitosamente');
-        setPhotos([...photos, result.photo]);
+        window.location.reload();
         if (fileInputRef.current) {
           fileInputRef.current.value = '';
         }
@@ -179,7 +183,7 @@ export default function PhotoManagementPage() {
               >
                 <div className="relative w-full aspect-square">
                   <Image
-                    src={photo.photo_url}
+                    src={photo.image_url}
                     alt="Portfolio"
                     fill
                     className="object-cover"

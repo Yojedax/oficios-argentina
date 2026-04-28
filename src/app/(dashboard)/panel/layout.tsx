@@ -48,7 +48,7 @@ export default function DashboardLayout({
     <div className="min-h-screen bg-gray-50">
       <div className="flex gap-0 lg:gap-6">
         <div className="hidden lg:block lg:w-64 lg:flex-shrink-0">
-          <DashboardSidebar user={user} />
+          <DashboardSidebar userName={user?.user_metadata?.full_name || user?.email || "Usuario"} />
         </div>
 
         <div className="flex-1">
@@ -76,7 +76,7 @@ export default function DashboardLayout({
 
           {isSidebarOpen && (
             <div className="lg:hidden bg-white border-b">
-              <DashboardSidebar user={user} />
+              <DashboardSidebar userName={user?.user_metadata?.full_name || user?.email || "Usuario"} />
             </div>
           )}
 

@@ -4,7 +4,7 @@ import React from 'react';
 import Link from 'next/link';
 import { FOOTER_LINKS } from '@/lib/constants';
 
-const Footer = React.forwardRef<HTMLFootElement, React.HTMLAttributes<HTMLFootElement>>(
+const Footer = React.forwardRef<HTMLElement, React.HTMLAttributes<HTMLElement>>(
   (props, ref) => {
     const currentYear = new Date().getFullYear();
 

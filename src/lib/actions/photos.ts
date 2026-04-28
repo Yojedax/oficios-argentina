@@ -2,7 +2,7 @@
 
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
-import { v4 as uuidv4 } from 'crypto';
+// crypto.randomUUID() is used below (available in Node 19+/Edge runtime)
 
 export async function uploadPortfolioPhoto(formData: FormData) {
   const supabase = createServerSupabaseClient();

@@ -42,13 +42,11 @@ export async function POST(request: NextRequest) {
     }
 
     // Incrementar contact_count
-    await supabase.rpc('increment_contact_count', { prof_id: professional_id }).catch(() => {
-      // Si el RPC no existe, actualizar manualmente
-      supabase
-        .from('professional_profiles')
-        .update({ contact_count: supabase.rpc('') as any })
-        .eq('id', professional_id);
-    });
+    try {
+      await supabase.rpc('increment_contact_count', { prof_id: professional_id });
+    } catch {
+      // Si el RPC no existe, ignorar
+    }
 
     // Enviar email via Resend (opcional, si está configurado)
     if (process.env.RESEND_API_KEY) {

@@ -1,7 +1,6 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { ProfessionalCard } from '@/components/profesionales/ProfessionalCard';
-import { Pagination } from '@/components/ui/Pagination';
 import { getCategoryBySlug } from '@/lib/queries/categories';
 import { getProfessionalsByCategory } from '@/lib/queries/professionals';
 import { getProvinces } from '@/lib/queries/locations';
@@ -42,13 +41,18 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
   const page = parseInt(searchParams.page || '1');
   const province = searchParams.province || '';
   const city = searchParams.city || '';
+  const limit = 12;
 
-  const { professionals, total, totalPages } =
-    await getProfessionalsByCategory(category.id, {
-      page,
-      province,
-      city,
-    });
+  const result = await getProfessionalsByCategory(category.slug, {
+    page,
+    province,
+    city,
+    limit,
+  });
+
+  const professionals = result.data;
+  const total = result.count;
+  const totalPages = Math.ceil(total / limit);
 
   const provinces = await getProvinces();
 
@@ -65,8 +69,8 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
           {/* Filter sidebar */}
           <aside className="lg:col-span-1">
-            <div className="bg-white rounded-card p-5 shadow-card sticky top-20">
-              <h3 className="font-semibold text-foreground mb-4">Filtrar por ubicación</h3>
+            <div className="bg-white rounded-xl p-5 shadow-sm sticky top-20">
+              <h3 className="font-semibold text-gray-900 mb-4">Filtrar por ubicación</h3>
               <form className="space-y-4">
                 <input type="hidden" name="page" value="1" />
                 <div>
@@ -77,7 +81,7 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
                     id="province"
                     name="province"
                     defaultValue={province}
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-green-600 focus:border-green-600"
                   >
                     <option value="">Todas las provincias</option>
                     {provinces.map((prov) => (
@@ -87,6 +91,12 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
                     ))}
                   </select>
                 </div>
+                <button
+                  type="submit"
+                  className="w-full bg-[#1B4332] text-white rounded-lg px-3 py-2 text-sm font-medium hover:bg-[#0f2818] transition-colors"
+                >
+                  Filtrar
+                </button>
               </form>
             </div>
           </aside>
@@ -97,10 +107,10 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
               profesionales
             </div>
 
-            {(professionals || []).length > 0 ? (
+            {professionals.length > 0 ? (
               <>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-                  {(professionals || []).map((professional) => (
+                  {professionals.map((professional) => (
                     <ProfessionalCard
                       key={professional.id}
                       professional={professional}
@@ -109,11 +119,21 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
                 </div>
 
                 {totalPages > 1 && (
-                  <Pagination
-                    currentPage={page}
-                    totalPages={totalPages}
-                    baseUrl={`/oficios/${params.slug}?province=${province}&city=${city}`}
-                  />
+                  <div className="flex justify-center gap-2">
+                    {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
+                      <a
+                        key={p}
+                        href={`/oficios/${params.slug}?page=${p}&province=${province}&city=${city}`}
+                        className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                          p === page
+                            ? 'bg-[#1B4332] text-white'
+                            : 'bg-white text-gray-700 hover:bg-gray-100 border'
+                        }`}
+                      >
+                        {p}
+                      </a>
+                    ))}
+                  </div>
                 )}
               </>
             ) : (

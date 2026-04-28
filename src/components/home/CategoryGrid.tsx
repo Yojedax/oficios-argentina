@@ -8,10 +8,10 @@ import { cn } from '@/lib/utils';
 import { Card } from '@/components/ui/Card';
 
 export interface Category {
-  id: string;
+  id: string | number;
   name: string;
   slug: string;
-  icon?: string;
+  icon?: string | null;
   professional_count?: number;
 }
 
@@ -34,7 +34,7 @@ const CategoryGrid = React.forwardRef<HTMLDivElement, CategoryGridProps>(
     >
       <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
         {categories.map((category) => {
-          const IconComponent = getIconComponent(category.icon);
+          const IconComponent = getIconComponent(category.icon ?? undefined);
 
           return (
             <Link key={category.id} href={`/oficios/${category.slug}`}>

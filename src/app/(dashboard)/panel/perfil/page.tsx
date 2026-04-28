@@ -8,7 +8,7 @@ import { updateProfessionalProfile } from '@/lib/actions/profiles';
 import { createClient } from '@/lib/supabase/client';
 
 interface CategoryOption {
-  id: string;
+  id: number;
   name: string;
 }
 
@@ -34,10 +34,13 @@ export default function ProfileEditPage() {
     formState: { errors },
   } = useForm<ProfileFormData>({
     resolver: zodResolver(profileSchema),
+    defaultValues: {
+      category_ids: [],
+    },
   });
 
   const selectedProvince = watch('province');
-  const selectedCategories = watch('categories') || [];
+  const selectedCategoryIds = watch('category_ids') || [];
 
   useEffect(() => {
     const loadData = async () => {
@@ -48,29 +51,35 @@ export default function ProfileEditPage() {
 
       const { data: profile } = await supabase
         .from('professional_profiles')
-        .select('*')
+        .select('*, professional_categories(category_id)')
         .eq('user_id', user.id)
         .single();
 
       if (profile) {
-        setValue('full_name', profile.full_name || '');
-        setValue('email', user.email || '');
-        setValue('province', profile.province || '');
-        setValue('city', profile.city || '');
-        setValue('bio', profile.bio || '');
+        setValue('business_name', profile.business_name || '');
+        setValue('description', profile.description || '');
+        setValue('whatsapp', profile.whatsapp || '');
+        setValue('phone', profile.phone || '');
+        setValue('email_contact', profile.email_contact || '');
         setValue('experience_years', profile.experience_years || 0);
         setValue('availability', profile.availability || '');
-        setValue('categories', profile.categories || []);
+        setValue('province', profile.province || '');
+        setValue('city', profile.city || '');
+        setValue('zone_details', profile.zone_details || '');
+        const catIds = (profile.professional_categories as { category_id: number }[] | null)?.map(
+          (pc: { category_id: number }) => pc.category_id
+        ) || [];
+        setValue('category_ids', catIds);
       }
 
       const { data: catsData } = await supabase
         .from('categories')
-        .select('*')
+        .select('id, name')
         .order('name');
 
       if (catsData) {
         setCategories(
-          catsData.map((cat: any) => ({ id: cat.id, name: cat.name }))
+          catsData.map((cat: { id: number; name: string }) => ({ id: cat.id, name: cat.name }))
         );
       }
 
@@ -80,7 +89,7 @@ export default function ProfileEditPage() {
         .order('name');
 
       if (provsData) {
-        setProvinces(provsData as any);
+        setProvinces(provsData as unknown as Province[]);
       }
 
       setIsLoading(false);
@@ -96,6 +105,15 @@ export default function ProfileEditPage() {
     }
   }, [selectedProvince, provinces]);
 
+  const handleCategoryToggle = (catId: number) => {
+    const current = selectedCategoryIds;
+    if (current.includes(catId)) {
+      setValue('category_ids', current.filter((id) => id !== catId), { shouldValidate: true });
+    } else {
+      setValue('category_ids', [...current, catId], { shouldValidate: true });
+    }
+  };
+
   const onSubmit = async (data: ProfileFormData) => {
     setIsSubmitting(true);
     setErrorMessage('');
@@ -109,7 +127,7 @@ export default function ProfileEditPage() {
       } else {
         setSuccessMessage('Perfil actualizado exitosamente');
       }
-    } catch (error) {
+    } catch {
       setErrorMessage('Ocurrió un error. Intentá de nuevo.');
     } finally {
       setIsSubmitting(false);
@@ -139,33 +157,67 @@ export default function ProfileEditPage() {
       <form onSubmit={handleSubmit(onSubmit)} className="bg-white rounded-lg shadow p-6 space-y-6">
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
-            Nombre Completo
+            Nombre del Negocio / Nombre Profesional
           </label>
           <input
-            {...register('full_name')}
+            {...register('business_name')}
             type="text"
             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#1B4332] focus:border-transparent"
+            placeholder="Ej: Electricidad García, Juan Plomero..."
           />
-          {errors.full_name && (
-            <p className="text-red-600 text-sm mt-1">{errors.full_name.message}</p>
+          {errors.business_name && (
+            <p className="text-red-600 text-sm mt-1">{errors.business_name.message}</p>
           )}
         </div>
 
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
-            Correo (no editable)
+            Email de Contacto
           </label>
           <input
-            {...register('email')}
+            {...register('email_contact')}
             type="email"
-            disabled
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-100 cursor-not-allowed"
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#1B4332] focus:border-transparent"
+            placeholder="email@ejemplo.com"
           />
+          {errors.email_contact && (
+            <p className="text-red-600 text-sm mt-1">{errors.email_contact.message}</p>
+          )}
         </div>
 
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
-            Provincia
+            WhatsApp *
+          </label>
+          <input
+            {...register('whatsapp')}
+            type="tel"
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#1B4332] focus:border-transparent"
+            placeholder="Ej: 1155667788"
+          />
+          {errors.whatsapp && (
+            <p className="text-red-600 text-sm mt-1">{errors.whatsapp.message}</p>
+          )}
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Teléfono
+          </label>
+          <input
+            {...register('phone')}
+            type="tel"
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#1B4332] focus:border-transparent"
+            placeholder="Ej: 011-4555-6677"
+          />
+          {errors.phone && (
+            <p className="text-red-600 text-sm mt-1">{errors.phone.message}</p>
+          )}
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Provincia *
           </label>
           <select
             {...register('province')}
@@ -185,7 +237,7 @@ export default function ProfileEditPage() {
 
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
-            Ciudad
+            Ciudad *
           </label>
           <select
             {...register('city')}
@@ -205,24 +257,39 @@ export default function ProfileEditPage() {
         </div>
 
         <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Detalles de zona
+          </label>
+          <input
+            {...register('zone_details')}
+            type="text"
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#1B4332] focus:border-transparent"
+            placeholder="Ej: Zona Norte, Capital Federal, etc."
+          />
+          {errors.zone_details && (
+            <p className="text-red-600 text-sm mt-1">{errors.zone_details.message}</p>
+          )}
+        </div>
+
+        <div>
           <label className="block text-sm font-medium text-gray-700 mb-3">
-            Especialidades
+            Especialidades * (máximo 5)
           </label>
           <div className="space-y-2 bg-gray-50 p-4 rounded-lg max-h-48 overflow-y-auto">
             {categories.map((cat) => (
-              <label key={cat.id} className="flex items-center">
+              <label key={cat.id} className="flex items-center cursor-pointer">
                 <input
                   type="checkbox"
-                  value={cat.name}
-                  {...register('categories')}
+                  checked={selectedCategoryIds.includes(cat.id)}
+                  onChange={() => handleCategoryToggle(cat.id)}
                   className="w-4 h-4 text-[#1B4332] rounded"
                 />
                 <span className="ml-3 text-gray-700">{cat.name}</span>
               </label>
             ))}
           </div>
-          {errors.categories && (
-            <p className="text-red-600 text-sm mt-1">{errors.categories.message}</p>
+          {errors.category_ids && (
+            <p className="text-red-600 text-sm mt-1">{errors.category_ids.message}</p>
           )}
         </div>
 
@@ -259,16 +326,16 @@ export default function ProfileEditPage() {
 
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
-            Sobre ti
+            Descripción *
           </label>
           <textarea
-            {...register('bio')}
+            {...register('description')}
             rows={6}
             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#1B4332] focus:border-transparent resize-none"
-            placeholder="Contá sobre tu experiencia, especialidades y lo que te diferencia..."
+            placeholder="Contá sobre tu experiencia, especialidades y lo que te diferencia... (mínimo 50 caracteres)"
           />
-          {errors.bio && (
-            <p className="text-red-600 text-sm mt-1">{errors.bio.message}</p>
+          {errors.description && (
+            <p className="text-red-600 text-sm mt-1">{errors.description.message}</p>
           )}
         </div>
 

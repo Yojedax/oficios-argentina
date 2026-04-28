@@ -23,7 +23,7 @@ export async function getProvinces(): Promise<string[]> {
     .order('province');
 
   if (error) throw error;
-  const unique = [...new Set((data || []).map(l => l.province))];
+  const unique = Array.from(new Set((data || []).map((l: { province: string }) => l.province)));
   return unique;
 }
 

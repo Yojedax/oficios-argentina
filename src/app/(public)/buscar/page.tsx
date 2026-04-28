@@ -17,16 +17,12 @@ export default async function SearchPage({ searchParams }: PageProps) {
   const province = searchParams.province || '';
   const city = searchParams.city || '';
 
-  let results: Awaited<ReturnType<typeof searchProfessionals>> = [];
+  let results: { data: any[]; count: number } = { data: [], count: 0 };
   let hasSearched = false;
 
   if (query || province || city) {
     hasSearched = true;
-    results = await searchProfessionals({
-      query,
-      province,
-      city,
-    });
+    results = await searchProfessionals(query, { province, city });
   }
 
   return (
@@ -37,15 +33,16 @@ export default async function SearchPage({ searchParams }: PageProps) {
         </h1>
 
         <div className="max-w-2xl mx-auto mb-12">
-          <SearchBar initialQuery={query} />
+          <SearchBar defaultValue={query} />
         </div>
 
         {hasSearched ? (
           <>
             <div className="mb-6 text-gray-600 text-center">
-              {results.length > 0 ? (
+              {results.data.length > 0 ? (
                 <p>
-                  Se encontraron <span className="font-semibold">{results.length}</span>{' '}
+                  Se encontraron{' '}
+                  <span className="font-semibold">{results.count}</span>{' '}
                   resultados
                   {query && ` para "${query}"`}
                 </p>
@@ -57,9 +54,9 @@ export default async function SearchPage({ searchParams }: PageProps) {
               )}
             </div>
 
-            {results.length > 0 && (
+            {results.data.length > 0 && (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {results.map((professional) => (
+                {results.data.map((professional) => (
                   <ProfessionalCard
                     key={professional.id}
                     professional={professional}

@@ -12,17 +12,21 @@ import { Button } from '@/components/ui/Button';
 
 export interface ProfessionalCardData {
   id: string;
+  full_name?: string;
   name?: string;
-  business_name?: string;
-  avatar_url?: string;
-  categories?: string[];
-  city?: string;
-  province?: string;
+  business_name?: string | null;
+  avatar_url?: string | null;
+  categories?: (string | { name: string; slug: string })[];
+  city?: string | null;
+  province?: string | null;
   avg_rating?: number;
   review_count?: number;
   description?: string;
-  phone?: string;
+  phone?: string | null;
+  whatsapp?: string;
   slug?: string;
+  is_verified?: boolean;
+  is_featured?: boolean;
 }
 
 export interface ProfessionalCardProps {
@@ -32,12 +36,13 @@ export interface ProfessionalCardProps {
 
 const ProfessionalCard = React.forwardRef<HTMLDivElement, ProfessionalCardProps>(
   ({ professional, className }, ref) => {
-    const displayName = professional.business_name || professional.name || 'Profesional';
+    const displayName = professional.business_name || professional.full_name || professional.name || 'Profesional';
     const location = professional.city
       ? `${professional.city}${professional.province ? ', ' + professional.province : ''}`
       : '';
-    const whatsappLink = professional.phone
-      ? `https://wa.me/${professional.phone.replace(/\D/g, '')}`
+    const whatsappNumber = professional.whatsapp || professional.phone || '';
+    const whatsappLink = whatsappNumber
+      ? `https://wa.me/${whatsappNumber.replace(/\D/g, '')}`
       : '';
     const truncatedDescription = professional.description
       ? professional.description.substring(0, 120) + (professional.description.length > 120 ? '...' : '')
@@ -48,7 +53,7 @@ const ProfessionalCard = React.forwardRef<HTMLDivElement, ProfessionalCardProps>
         <div className="p-4 sm:p-6">
           <div className="flex items-start gap-4 mb-4">
             <Avatar
-              src={professional.avatar_url}
+              src={professional.avatar_url ?? undefined}
               name={displayName}
               size="lg"
             />
@@ -66,11 +71,14 @@ const ProfessionalCard = React.forwardRef<HTMLDivElement, ProfessionalCardProps>
 
           {professional.categories && professional.categories.length > 0 && (
             <div className="flex flex-wrap gap-2 mb-4">
-              {professional.categories.slice(0, 3).map((category) => (
-                <Badge key={category} variant="secondary" className="text-xs">
-                  {category}
-                </Badge>
-              ))}
+              {professional.categories.slice(0, 3).map((category, idx) => {
+                const catName = typeof category === 'string' ? category : category.name;
+                return (
+                  <Badge key={catName || idx} variant="secondary" className="text-xs">
+                    {catName}
+                  </Badge>
+                );
+              })}
             </div>
           )}
 
