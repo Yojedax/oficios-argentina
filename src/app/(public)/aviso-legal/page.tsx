@@ -40,7 +40,7 @@ export default function LegalDisclaimerPage() {
                 2. Sin Garantías
               </h2>
               <p className="leading-relaxed mb-4">
-                Oficios Argentina se proporciona "tal cual" sin garantías de ningún tipo.
+                Oficios Argentina se proporciona &quot;tal cual&quot; sin garantías de ningún tipo.
                 Específicamente:
               </p>
               <ul className="list-disc pl-6 space-y-2">

@@ -44,12 +44,12 @@ export default async function SearchPage({ searchParams }: PageProps) {
                   Se encontraron{' '}
                   <span className="font-semibold">{results.count}</span>{' '}
                   resultados
-                  {query && ` para "${query}"`}
+                  {query && <> para &quot;{query}&quot;</>}
                 </p>
               ) : (
                 <p>
                   No se encontraron resultados
-                  {query && ` para "${query}"`}. Intentá con otros términos.
+                  {query && <> para &quot;{query}&quot;</>}. Intentá con otros términos.
                 </p>
               )}
             </div>

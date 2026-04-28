@@ -104,6 +104,7 @@ export default function PhotoUploader({ photos, maxPhotos = 10, onUpdate }: Phot
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
           {photos.map((photo) => (
             <div key={photo.id} className="relative group aspect-square rounded-lg overflow-hidden">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={photo.image_url}
                 alt={photo.caption || 'Foto de trabajo'}
